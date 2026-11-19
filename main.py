@@ -1,10 +1,14 @@
 from datetime import datetime, timedelta, timezone
 import os
+from pathlib import Path
 from typing import List, Optional
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import requests
+
+BASE_DIR = Path(__file__).resolve().parent
 
 app = FastAPI(title="QB SHAHAD AI Signal Engine", version="4.2.1")
 
@@ -18,10 +22,10 @@ app.add_middleware(
 
 TZ_BD = timezone(timedelta(hours=6))
 
-# আপনার দেওয়া Twelve Data API Key (Environment Variable থাকলে সেটিকে অগ্রাধিকার দেবে)
+# আপনার দেওয়া Twelve Data API Key (Environment Variable থাকলে সেটিকে অগ্রাধিকার দেবে)
 DEFAULT_TWELVE_DATA_API_KEY = "193fbdb815b54898befc1ae20222ac59"
 
-# Quotex-এর Real মার্কেটের সাথে মিলে যাওয়া ফরেক্স পেয়ারগুলো
+# Quotex-এর Real মার্কেটের সাথে মিলে যাওয়া ফরেক্স পেয়ারগুলো
 FOREX_MATCHED_REAL_PAIRS = [
     "EUR/USD",
     "GBP/USD",
@@ -152,7 +156,7 @@ def analyze_otc_logic(candles: List[Candle], now: datetime) -> dict:
     score += 1.2 if trend_diff >= 0 else -1.2
     score += 1.0 if short_diff >= 0 else -1.0
 
-    # OTC মার্কেটে বড় বডির ক্যান্ডেলের পর রিভার্সাল ফ্যাক্টর
+    # OTC মার্কেটে বড় বডির ক্যান্ডেলের পর রিভার্সাল ফ্যাক্টর
     if avg_range > 0 and body > avg_range * 0.75:
         score *= -0.65
 
@@ -196,6 +200,14 @@ def refresh_red_dot():
     else:
         state.show_red_dot = False
         state.alert_reason = f"Win rate healthy ({win_rate:.0f}%)"
+
+
+@app.get("/", response_class=HTMLResponse)
+def serve_dashboard():
+    html_file = BASE_DIR / "templates" / "index.html"
+    if html_file.exists():
+        return html_file.read_text(encoding="utf-8")
+    return "<h1>QB SHAHAD AI Signal Engine</h1><p>Open <a href='/docs'>/docs</a> for API docs.</p>"
 
 
 @app.get("/health")
@@ -293,7 +305,7 @@ def live_signal(req: LiveSignalRequest):
             **slot,
         }
 
-    # REAL মার্কেট: শুধু ফরেক্সের সাথে মিলে যাওয়া পেয়ার অনুমোদিত
+    # REAL মার্কেট: শুধু ফরেক্সের সাথে মিলে যাওয়া পেয়ার অনুমোদিত
     normalized_pair = req.market.strip().upper()
     if normalized_pair not in FOREX_MATCHED_REAL_PAIRS:
         return {
