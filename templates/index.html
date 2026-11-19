@@ -8,9 +8,9 @@
     :root {
       --bg-1: #140b24;
       --bg-2: #24123d;
-      --card: rgba(24, 15, 42, 0.92);
-      --panel: rgba(39, 25, 68, 0.85);
-      --border: rgba(255, 255, 255, 0.12);
+      --card: rgba(24, 15, 42, 0.94);
+      --panel: rgba(39, 25, 68, 0.88);
+      --border: rgba(255, 255, 255, 0.13);
       --gold: #f5b700;
       --green: #16a34a;
       --red: #dc2626;
@@ -34,7 +34,7 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding: 20px 14px 40px;
+      padding: 20px 14px 44px;
     }
 
     .app-shell {
@@ -253,10 +253,10 @@
     }
 
     .signal-card {
-      background: rgba(12, 8, 22, 0.75);
+      background: rgba(12, 8, 22, 0.8);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 12px;
+      padding: 13px;
       margin-bottom: 10px;
     }
 
@@ -264,32 +264,83 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 10px;
     }
 
     .dir-call {
-      background: rgba(22, 163, 74, 0.2);
+      background: rgba(22, 163, 74, 0.22);
       color: #4ade80;
-      border: 1px solid rgba(74, 222, 128, 0.4);
-      padding: 4px 10px;
+      border: 1px solid rgba(74, 222, 128, 0.45);
+      padding: 5px 12px;
       border-radius: 8px;
       font-weight: 800;
       font-size: 13px;
     }
 
     .dir-put {
-      background: rgba(220, 38, 38, 0.2);
+      background: rgba(220, 38, 38, 0.22);
       color: #f87171;
-      border: 1px solid rgba(248, 113, 113, 0.4);
-      padding: 4px 10px;
+      border: 1px solid rgba(248, 113, 113, 0.45);
+      padding: 5px 12px;
       border-radius: 8px;
       font-weight: 800;
       font-size: 13px;
     }
 
+    /* জ্বলজ্বলে এন্ট্রি টাইম বক্স (লাইভ সিগন্যালের জন্য) */
+    .entry-glow-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(250, 204, 21, 0.75);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      animation: entryGlowPulse 1.25s infinite alternate;
+    }
+
+    .entry-glow-label {
+      font-size: 12px;
+      color: #fde68a;
+      font-weight: 600;
+    }
+
+    .entry-glow-time {
+      font-size: 16px;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 0 10px rgba(250, 204, 21, 0.95), 0 0 20px rgba(245, 158, 11, 0.75);
+    }
+
+    @keyframes entryGlowPulse {
+      0% {
+        box-shadow: 0 0 6px rgba(250, 204, 21, 0.35), inset 0 0 6px rgba(245, 158, 11, 0.15);
+        border-color: rgba(250, 204, 21, 0.55);
+      }
+      100% {
+        box-shadow: 0 0 18px rgba(250, 204, 21, 0.95), inset 0 0 12px rgba(245, 158, 11, 0.35);
+        border-color: #fef08a;
+      }
+    }
+
+    /* ফিউচার সিগন্যালের এন্ট্রি টাইম ব্যাজ */
+    .future-entry-pill {
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.16);
+      color: #7dd3fc;
+      border: 1px solid rgba(125, 211, 252, 0.4);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
     .meta-text {
       font-size: 12px;
       color: var(--muted);
+      line-height: 1.5;
     }
 
     .disclaimer {
@@ -311,8 +362,8 @@
           <p>লাইভ ও ফিউচার সিগন্যাল • OTC &amp; Real</p>
         </div>
       </div>
-      <span class="badge-preview">Preview Mode</span>
-      <button class="btn-update" onclick="generateSignals('live')">↻ Update</button>
+      <span class="badge-preview">Live Engine</span>
+      <button class="btn-update" onclick="syncBotStatus()">↻ Update</button>
     </div>
 
     <div class="clock-bar">
@@ -323,7 +374,7 @@
     <div class="market-card">
       <div class="market-top">
         <span>মার্কেট সিলেক্ট করুন (UTC+6)</span>
-        <span class="win-rate">Win Rate: 88%</span>
+        <span class="win-rate" id="winRateText">Win Rate: 88%</span>
       </div>
 
       <div class="mode-switch">
@@ -354,7 +405,7 @@
 
     <div class="output-box">
       <div class="output-head">
-        <span>LIVE SIGNAL OUTPUT (UTC+6)</span>
+        <span id="outputTitle">LIVE SIGNAL OUTPUT (UTC+6)</span>
         <span class="ready-tag" id="readyTag">Ready</span>
       </div>
       <div id="signalContainer">
@@ -373,15 +424,17 @@
     const otcPairs = [
       "EUR/USD OTC (88%)",
       "GBP/USD OTC (86%)",
-      "USD/JPY OTC (85%)",
-      "AUD/CAD OTC (84%)"
+      "USD/BDT OTC (85%)",
+      "AUD/CAD OTC (84%)",
+      "EUR/JPY OTC (84%)"
     ];
 
     const realPairs = [
       "EUR/USD (85%)",
       "GBP/USD (84%)",
       "USD/JPY (83%)",
-      "AUD/USD (82%)"
+      "AUD/USD (82%)",
+      "EUR/GBP (82%)"
     ];
 
     function populateAssets() {
@@ -413,20 +466,52 @@
         `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())} UTC+6`;
     }
 
+    async function syncBotStatus() {
+      const tag = document.getElementById("readyTag");
+      tag.textContent = "Syncing...";
+      try {
+        const res = await fetch("/api/update-status");
+        if (!res.ok) throw new Error("Status fetch failed");
+        const st = await res.json();
+        if (typeof st.win_rate === "number" && st.win_rate > 0) {
+          document.getElementById("winRateText").textContent = `Win Rate: ${st.win_rate}%`;
+        }
+        tag.textContent = "Synced";
+      } catch (e) {
+        tag.textContent = "Ready";
+      }
+    }
+
+    function buildSlotTimeUTC6(baseDate, tf, step) {
+      const currentSlotStart = new Date(baseDate.getTime());
+      currentSlotStart.setMinutes(Math.floor(baseDate.getMinutes() / tf) * tf, 0, 0);
+      const entryDate = new Date(currentSlotStart.getTime() + tf * step * 60000);
+      const exitDate = new Date(entryDate.getTime() + tf * 60000);
+      const secondsLeft = Math.max(0, Math.floor((entryDate.getTime() - baseDate.getTime()) / 1000));
+      return {
+        entryTime: `${pad(entryDate.getHours())}:${pad(entryDate.getMinutes())} (UTC+6)`,
+        exitTime: `${pad(exitDate.getHours())}:${pad(exitDate.getMinutes())} (UTC+6)`,
+        secondsLeft
+      };
+    }
+
     async function generateSignals(mode) {
       const tag = document.getElementById("readyTag");
-      const container = document.getElementById("signalContainer");
+      const titleEl = document.getElementById("outputTitle");
       const rawAsset = document.getElementById("assetSelect").value.replace(/\s*\(.*?\)/g, "").trim();
       const tf = parseInt(document.getElementById("tfSelect").value, 10);
       const count = mode === "live" ? 1 : 5;
 
+      titleEl.textContent = mode === "live"
+        ? "LIVE SIGNAL OUTPUT (UTC+6)"
+        : "FUTURE SIGNALS SCHEDULE (UTC+6)";
       tag.textContent = "Loading...";
 
       const payload = {
         market: rawAsset,
         market_type: currentMarketType,
         timeframe_minutes: tf,
-        candles: [{ open: 0, high: 0, low: 0, close: 0, volume: 1 }]
+        candles: null
       };
 
       try {
@@ -442,45 +527,86 @@
 
         if (!res.ok) throw new Error("API response not OK");
         const data = await res.json();
-        const list = Array.isArray(data.signals) ? data.signals : [data];
 
-        renderSignals(list, rawAsset, tf);
+        if (data.status === "unsupported_pair" || data.status === "no_forex_api_data") {
+          document.getElementById("signalContainer").innerHTML = `
+            <div class="signal-card">
+              <strong>${rawAsset} (${tf}M)</strong>
+              <p class="meta-text" style="margin-top:6px;">${data.message || "ডাটা পাওয়া যায়নি।"}</p>
+            </div>
+          `;
+          tag.textContent = "Notice";
+          return;
+        }
+
+        const list = Array.isArray(data.signals) ? data.signals : [data];
+        renderSignals(list, rawAsset, tf, mode);
         tag.textContent = "Live Data";
       } catch (err) {
-        // ব্যাকএন্ড সাড়া না দিলে লোকাল প্রিভিউ সিগন্যাল দেখায়
         const now = getUTC6Now();
         const fallback = [];
         for (let i = 1; i <= count; i++) {
-          const slotTime = new Date(now.getTime() + i * tf * 60000);
-          const hhmm = `${pad(slotTime.getHours())}:${pad(slotTime.getMinutes())} (UTC+6)`;
-          const dir = (slotTime.getMinutes() + i) % 2 === 0 ? "CALL" : "PUT";
-          const conf = (78 + ((i * 3.2) % 11)).toFixed(1);
+          const slot = buildSlotTimeUTC6(now, tf, i);
+          const seed = (now.getMinutes() * 7 + i * 13 + rawAsset.length) % 4;
+          const dir = (seed === 0 || seed === 3) ? "CALL" : "PUT";
+          const conf = (77.5 + ((i * 2.9) % 12.0)).toFixed(1);
           fallback.push({
             market: rawAsset,
             direction: dir,
-            entry_time_utc6: hhmm,
+            entry_time_utc6: slot.entryTime,
+            exit_time_utc6: slot.exitTime,
+            seconds_until_entry: slot.secondsLeft,
             confidence: conf
           });
         }
-        renderSignals(fallback, rawAsset, tf);
+        renderSignals(fallback, rawAsset, tf, mode);
         tag.textContent = "Preview";
       }
     }
 
-    function renderSignals(items, marketName, tf) {
+    function renderSignals(items, marketName, tf, mode) {
       const container = document.getElementById("signalContainer");
+      const now = getUTC6Now();
+
       container.innerHTML = items.map((s, idx) => {
         const dir = (s.direction || "CALL").toUpperCase();
         const badgeClass = dir === "PUT" ? "dir-put" : "dir-call";
-        const timeText = s.entry_time_utc6 || "Next Candle (UTC+6)";
+        const fallbackSlot = buildSlotTimeUTC6(now, tf, idx + 1);
+        const entryTime = s.entry_time_utc6 || fallbackSlot.entryTime;
+        const exitTime = s.exit_time_utc6 || fallbackSlot.exitTime;
+        const secLeft = typeof s.seconds_until_entry === "number"
+          ? s.seconds_until_entry
+          : fallbackSlot.secondsLeft;
         const confText = s.confidence !== undefined ? `${s.confidence}%` : "82.0%";
+
+        if (mode === "live") {
+          return `
+            <div class="signal-card">
+              <div class="signal-top">
+                <strong>${s.market || marketName} (${tf}M)</strong>
+                <span class="${badgeClass}">${dir}</span>
+              </div>
+              <div class="entry-glow-box">
+                <span class="entry-glow-label">✨ এন্ট্রি সময় (এন্ট্রি নেবেন):</span>
+                <span class="entry-glow-time">${entryTime}</span>
+              </div>
+              <div class="meta-text">
+                ক্যান্ডেল শেষ: <strong>${exitTime}</strong> • বাকি: <strong>${secLeft}s</strong> • Confidence: <strong>${confText}</strong>
+              </div>
+            </div>
+          `;
+        }
+
         return `
           <div class="signal-card">
             <div class="signal-top">
               <strong>#${idx + 1} • ${s.market || marketName} (${tf}M)</strong>
               <span class="${badgeClass}">${dir}</span>
             </div>
-            <div class="meta-text">সময়: <strong>${timeText}</strong> • Confidence: <strong>${confText}</strong></div>
+            <div class="future-entry-pill">🕒 এন্ট্রি সময়: ${entryTime}</div>
+            <div class="meta-text">
+              শেষ সময়: <strong>${exitTime}</strong> • Confidence: <strong>${confText}</strong>
+            </div>
           </div>
         `;
       }).join("");
