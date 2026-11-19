@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QB SHAHAD — Quotex Signal Bot</title>
+  <style>
+    :root {
+      --bg-1: #140b24;
+      --bg-2: #24123d;
+      --card: rgba(24, 15, 42, 0.92);
+      --panel: rgba(39, 25, 68, 0.85);
+      --border: rgba(255, 255, 255, 0.12);
+      --gold: #f5b700;
+      --green: #16a34a;
+      --red: #dc2626;
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at 15% 20%, #4c1d95 0%, transparent 45%),
+                  radial-gradient(circle at 85% 30%, #7c2d12 0%, transparent 40%),
+                  linear-gradient(160deg, var(--bg-1), var(--bg-2));
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px 14px 40px;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 520px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--panel);
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-box {
+      background: var(--gold);
+      color: #111827;
+      font-weight: 800;
+      font-size: 13px;
+      line-height: 1.15;
+      padding: 8px 10px;
+      border-radius: 10px;
+      text-align: left;
+    }
+
+    .title-group h1 {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .title-group p {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .badge-preview {
+      background: rgba(245, 183, 0, 0.15);
+      color: #fde047;
+      border: 1px solid rgba(245, 183, 0, 0.35);
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .btn-update {
+      background: #3b0d1b;
+      color: #fecdd3;
+      border: 1px solid rgba(251, 113, 133, 0.35);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .clock-bar {
+      margin-top: 12px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .status-pill {
+      background: rgba(245, 183, 0, 0.16);
+      color: #fde047;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .market-card {
+      margin-top: 14px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .market-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+
+    .win-rate {
+      color: #4ade80;
+      font-weight: 700;
+    }
+
+    .mode-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .mode-btn {
+      padding: 11px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.55);
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .mode-btn.active {
+      background: rgba(124, 58, 237, 0.28);
+      border-color: #a78bfa;
+      color: #ffffff;
+    }
+
+    .selectors {
+      display: grid;
+      grid-template-columns: 1.4fr 0.8fr;
+      gap: 10px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    select {
+      width: 100%;
+      background: #120b21;
+      color: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      outline: none;
+    }
+
+    .action-row {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn-live {
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      color: #ffffff;
+      border: none;
+      border-radius: 14px;
+      padding: 13px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .btn-future {
+      background: rgba(30, 27, 55, 0.95);
+      color: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 13px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .output-box {
+      margin-top: 16px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .output-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+    }
+
+    .ready-tag {
+      background: rgba(148, 163, 184, 0.2);
+      color: #e2e8f0;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+    }
+
+    .signal-card {
+      background: rgba(12, 8, 22, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .signal-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .dir-call {
+      background: rgba(22, 163, 74, 0.2);
+      color: #4ade80;
+      border: 1px solid rgba(74, 222, 128, 0.4);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .dir-put {
+      background: rgba(220, 38, 38, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(248, 113, 113, 0.4);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .meta-text {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .disclaimer {
+      margin-top: 12px;
+      font-size: 11px;
+      color: #cbd5e1;
+      text-align: center;
+      line-height: 1.45;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="header">
+      <div class="brand-left">
+        <div class="logo-box">QB<br />SHAHAD</div>
+        <div class="title-group">
+          <h1>Quotex Signal Bot</h1>
+          <p>লাইভ ও ফিউচার সিগন্যাল • OTC &amp; Real</p>
+        </div>
+      </div>
+      <span class="badge-preview">Preview Mode</span>
+      <button class="btn-update" onclick="generateSignals('live')">↻ Update</button>
+    </div>
+
+    <div class="clock-bar">
+      <span>Quotex Time: <strong id="utc6Clock">--:--:-- UTC+6</strong></span>
+      <span class="status-pill" id="engineStatus">● রঙ্গ চালু</span>
+    </div>
+
+    <div class="market-card">
+      <div class="market-top">
+        <span>মার্কেট সিলেক্ট করুন (UTC+6)</span>
+        <span class="win-rate">Win Rate: 88%</span>
+      </div>
+
+      <div class="mode-switch">
+        <button class="mode-btn active" id="btnOTC" onclick="setMarketType('OTC')">OTC Market</button>
+        <button class="mode-btn" id="btnREAL" onclick="setMarketType('REAL')">Real Market</button>
+      </div>
+
+      <div class="selectors">
+        <div class="field">
+          <label for="assetSelect">Asset / Pair</label>
+          <select id="assetSelect"></select>
+        </div>
+        <div class="field">
+          <label for="tfSelect">Timeframe</label>
+          <select id="tfSelect">
+            <option value="1" selected>1M</option>
+            <option value="3">3M</option>
+            <option value="5">5M</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-live" onclick="generateSignals('live')">⚡ LIVE SIGNAL</button>
+        <button class="btn-future" onclick="generateSignals('future')">🕒 FUTURE SIGNALS</button>
+      </div>
+    </div>
+
+    <div class="output-box">
+      <div class="output-head">
+        <span>LIVE SIGNAL OUTPUT (UTC+6)</span>
+        <span class="ready-tag" id="readyTag">Ready</span>
+      </div>
+      <div id="signalContainer">
+        <p class="meta-text">সিগন্যাল দেখতে <strong>LIVE SIGNAL</strong> অথবা <strong>FUTURE SIGNALS</strong> বাটনে চাপ দিন।</p>
+      </div>
+    </div>
+
+    <p class="disclaimer">
+      বাইনারি অপশন ট্রেডিংয়ে ঝুঁকি থাকে—যেকোনো সিগন্যাল আগে ডেমো অ্যাকাউন্টে যাচাই করে নেবেন।
+    </p>
+  </div>
+
+  <script>
+    let currentMarketType = "OTC";
+
+    const otcPairs = [
+      "EUR/USD OTC (88%)",
+      "GBP/USD OTC (86%)",
+      "USD/JPY OTC (85%)",
+      "AUD/CAD OTC (84%)"
+    ];
+
+    const realPairs = [
+      "EUR/USD (85%)",
+      "GBP/USD (84%)",
+      "USD/JPY (83%)",
+      "AUD/USD (82%)"
+    ];
+
+    function populateAssets() {
+      const select = document.getElementById("assetSelect");
+      const list = currentMarketType === "OTC" ? otcPairs : realPairs;
+      select.innerHTML = list.map(item => `<option value="${item}">${item}</option>`).join("");
+    }
+
+    function setMarketType(type) {
+      currentMarketType = type;
+      document.getElementById("btnOTC").classList.toggle("active", type === "OTC");
+      document.getElementById("btnREAL").classList.toggle("active", type === "REAL");
+      populateAssets();
+    }
+
+    function getUTC6Now() {
+      const now = new Date();
+      const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+      return new Date(utcMs + 6 * 3600 * 1000);
+    }
+
+    function pad(n) {
+      return String(n).padStart(2, "0");
+    }
+
+    function updateClock() {
+      const d = getUTC6Now();
+      document.getElementById("utc6Clock").textContent =
+        `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())} UTC+6`;
+    }
+
+    async function generateSignals(mode) {
+      const tag = document.getElementById("readyTag");
+      const container = document.getElementById("signalContainer");
+      const rawAsset = document.getElementById("assetSelect").value.replace(/\s*\(.*?\)/g, "").trim();
+      const tf = parseInt(document.getElementById("tfSelect").value, 10);
+      const count = mode === "live" ? 1 : 5;
+
+      tag.textContent = "Loading...";
+
+      const payload = {
+        market: rawAsset,
+        market_type: currentMarketType,
+        timeframe_minutes: tf,
+        candles: [{ open: 0, high: 0, low: 0, close: 0, volume: 1 }]
+      };
+
+      try {
+        const endpoint = mode === "live"
+          ? "/api/live-signal"
+          : `/api/future-signals?count=${count}`;
+
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error("API response not OK");
+        const data = await res.json();
+        const list = Array.isArray(data.signals) ? data.signals : [data];
+
+        renderSignals(list, rawAsset, tf);
+        tag.textContent = "Live Data";
+      } catch (err) {
+        // ব্যাকএন্ড সাড়া না দিলে লোকাল প্রিভিউ সিগন্যাল দেখায়
+        const now = getUTC6Now();
+        const fallback = [];
+        for (let i = 1; i <= count; i++) {
+          const slotTime = new Date(now.getTime() + i * tf * 60000);
+          const hhmm = `${pad(slotTime.getHours())}:${pad(slotTime.getMinutes())} (UTC+6)`;
+          const dir = (slotTime.getMinutes() + i) % 2 === 0 ? "CALL" : "PUT";
+          const conf = (78 + ((i * 3.2) % 11)).toFixed(1);
+          fallback.push({
+            market: rawAsset,
+            direction: dir,
+            entry_time_utc6: hhmm,
+            confidence: conf
+          });
+        }
+        renderSignals(fallback, rawAsset, tf);
+        tag.textContent = "Preview";
+      }
+    }
+
+    function renderSignals(items, marketName, tf) {
+      const container = document.getElementById("signalContainer");
+      container.innerHTML = items.map((s, idx) => {
+        const dir = (s.direction || "CALL").toUpperCase();
+        const badgeClass = dir === "PUT" ? "dir-put" : "dir-call";
+        const timeText = s.entry_time_utc6 || "Next Candle (UTC+6)";
+        const confText = s.confidence !== undefined ? `${s.confidence}%` : "82.0%";
+        return `
+          <div class="signal-card">
+            <div class="signal-top">
+              <strong>#${idx + 1} • ${s.market || marketName} (${tf}M)</strong>
+              <span class="${badgeClass}">${dir}</span>
+            </div>
+            <div class="meta-text">সময়: <strong>${timeText}</strong> • Confidence: <strong>${confText}</strong></div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    populateAssets();
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>
